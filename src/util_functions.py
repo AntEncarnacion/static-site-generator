@@ -1,4 +1,5 @@
 from leafnode import LeafNode
+from textnode import TextNode
 
 
 def text_node_to_html_node(text_node):
@@ -19,3 +20,26 @@ def text_node_to_html_node(text_node):
         case _:
             raise Exception("Invalid text type")
     return output_node
+
+
+def split_nodes_delimiter(old_nodes, delimiter, text_type):
+    new_nodes = []
+    for old_node in old_nodes:
+        if not isinstance(old_node, TextNode):
+            new_nodes.append(old_node)
+            continue
+        split_text = old_node.text.split(delimiter)
+        if len(split_text) == 1 or len(split_text) == 0:
+            new_nodes.append(old_node)
+            continue
+        elif len(split_text) % 2 == 0:
+            raise Exception(f"Invalid markdown detected in text: '{old_node.text}'")
+        else:
+            split_nodes = []
+            for text_index, text in enumerate(split_text):
+                if text_index % 2 == 0 and text != "":
+                    split_nodes.append(TextNode(text, "text"))
+                elif text != "":
+                    split_nodes.append(TextNode(text, text_type))
+            new_nodes.extend(split_nodes)
+    return new_nodes
