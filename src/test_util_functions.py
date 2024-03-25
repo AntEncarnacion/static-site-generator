@@ -2,7 +2,11 @@ import unittest
 from leafnode import LeafNode
 
 from textnode import TextNode
-from util_functions import split_nodes_delimiter
+from util_functions import (
+    extract_markdown_images,
+    split_nodes_delimiter,
+    extract_markdown_links,
+)
 
 
 class TestUtil(unittest.TestCase):
@@ -62,6 +66,32 @@ class TestUtil(unittest.TestCase):
             split_nodes_delimiter([node], "*", "bold")[0].to_html(),
             expected_result[0].to_html(),
         )
+
+    def test_extract_markdown_images_1(self):
+        text = "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and ![another](https://i.imgur.com/dfsdkjfd.png)"
+        expected_result = [
+            ("image", "https://i.imgur.com/zjjcJKZ.png"),
+            ("another", "https://i.imgur.com/dfsdkjfd.png"),
+        ]
+        self.assertEqual(extract_markdown_images(text), expected_result)
+
+    def test_extract_markdown_images_2(self):
+        text = "This is text with nothing"
+        expected_result = []
+        self.assertEqual(extract_markdown_images(text), expected_result)
+
+    def test_extract_markdown_links_1(self):
+        text = "This is text with an [url](https://i.imgur.com/zjjcJKZ.png) and [another](https://i.imgur.com/dfsdkjfd.png)"
+        expected_result = [
+            ("url", "https://i.imgur.com/zjjcJKZ.png"),
+            ("another", "https://i.imgur.com/dfsdkjfd.png"),
+        ]
+        self.assertEqual(extract_markdown_links(text), expected_result)
+
+    def test_extract_markdown_links_2(self):
+        text = "This is text with nothing"
+        expected_result = []
+        self.assertEqual(extract_markdown_images(text), expected_result)
 
 
 if __name__ == "__main__":
