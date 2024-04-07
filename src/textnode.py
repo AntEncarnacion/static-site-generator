@@ -1,7 +1,8 @@
 class TextNode:
-    def __init__(self, text, text_type) -> None:
+    def __init__(self, text, text_type, url=None) -> None:
         self.text = text
         self.text_type = text_type
+        self.url = url
         return
 
     def __eq__(self, other) -> bool:
