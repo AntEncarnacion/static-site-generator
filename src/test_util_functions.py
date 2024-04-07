@@ -6,6 +6,7 @@ from util_functions import (
     extract_markdown_images,
     split_nodes_delimiter,
     extract_markdown_links,
+    split_nodes_image,
 )
 
 
@@ -92,6 +93,29 @@ class TestUtil(unittest.TestCase):
         text = "This is text with nothing"
         expected_result = []
         self.assertEqual(extract_markdown_images(text), expected_result)
+
+    def test_split_nodes_image_1(self):
+        node = TextNode(
+            "This is text with an ![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png) and another ![second image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/3elNhQu.png)",
+            "text",
+        )
+        new_nodes = split_nodes_image([node])
+        expected_result = [
+            TextNode("This is text with an ", "text"),
+            TextNode(
+                "image",
+                "image",
+                "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png",
+            ),
+            TextNode(" and another ", "text"),
+            TextNode(
+                "second image",
+                "image",
+                "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/3elNhQu.png",
+            ),
+        ]
+
+        self.assertEqual(new_nodes, expected_result)
 
 
 if __name__ == "__main__":
