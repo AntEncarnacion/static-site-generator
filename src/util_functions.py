@@ -84,7 +84,7 @@ def split_nodes_image(old_nodes):
                     if text_index == 0 and text != "":
                         split_nodes.append(TextNode(text, "text"))
                     elif text_index == 1:
-                        split_nodes.append(TextNode(match[0], "link", url=match[1]))
+                        split_nodes.append(TextNode(match[0], "image", url=match[1]))
                     if text_index == 1 and text != "":
                         split_nodes.append(TextNode(text, "text"))
             new_nodes.extend(split_nodes)
@@ -109,10 +109,10 @@ def split_nodes_link(old_nodes):
             split_nodes = []
             for match_index, match in enumerate(matches):
                 if match_index == 0:
-                    split_text = old_node.text.split(f"![{match[0]}]({match[1]})", 1)
+                    split_text = old_node.text.split(f"[{match[0]}]({match[1]})", 1)
                 else:
                     split_text = split_nodes.pop().text.split(
-                        f"![{match[0]}]({match[1]})", 1
+                        f"[{match[0]}]({match[1]})", 1
                     )
 
                 for text_index, text in enumerate(split_text):

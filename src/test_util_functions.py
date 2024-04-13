@@ -7,6 +7,7 @@ from util_functions import (
     split_nodes_delimiter,
     extract_markdown_links,
     split_nodes_image,
+    split_nodes_link,
 )
 
 
@@ -114,6 +115,113 @@ class TestUtil(unittest.TestCase):
                 "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/3elNhQu.png",
             ),
         ]
+
+        self.assertEqual(new_nodes, expected_result)
+
+    def test_split_nodes_image_2(self):
+        node = TextNode(
+            "This is text with a no images.",
+            "text",
+        )
+        new_nodes = split_nodes_image([node])
+        expected_result = [
+            TextNode("This is text with a no images.", "text"),
+        ]
+
+        self.assertEqual(new_nodes, expected_result)
+
+    def test_split_nodes_image_3(self):
+        node = TextNode(
+            "This is text with a broken ![broken image](",
+            "text",
+        )
+        new_nodes = split_nodes_image([node])
+        expected_result = [
+            TextNode("This is text with a broken ![broken image](", "text"),
+        ]
+
+        self.assertEqual(new_nodes, expected_result)
+
+    def test_split_nodes_image_4(self):
+        node = TextNode(
+            "This is text with a [link]()",
+            "text",
+        )
+        new_nodes = split_nodes_image([node])
+        expected_result = [
+            TextNode("This is text with a [link]()", "text"),
+        ]
+
+        self.assertEqual(new_nodes, expected_result)
+
+    def test_split_nodes_image_5(self):
+        new_nodes = split_nodes_image([])
+        expected_result = []
+
+        self.assertEqual(new_nodes, expected_result)
+
+    def test_split_nodes_link_1(self):
+        node = TextNode(
+            "This is text with a [link](https://storage.googleapis.com/) and another [second link](https://storage.googleapis.com/)",
+            "text",
+        )
+        new_nodes = split_nodes_link([node])
+        expected_result = [
+            TextNode("This is text with a ", "text"),
+            TextNode(
+                "link",
+                "link",
+                "https://storage.googleapis.com/",
+            ),
+            TextNode(" and another ", "text"),
+            TextNode(
+                "second link",
+                "link",
+                "https://storage.googleapis.com/",
+            ),
+        ]
+
+        self.assertEqual(new_nodes, expected_result)
+
+    def test_split_nodes_link_2(self):
+        node = TextNode(
+            "This is text with no links.",
+            "text",
+        )
+        new_nodes = split_nodes_link([node])
+        expected_result = [
+            TextNode("This is text with no links.", "text"),
+        ]
+
+        self.assertEqual(new_nodes, expected_result)
+
+    def test_split_nodes_link_3(self):
+        node = TextNode(
+            "This is text with a broken link [broken link](",
+            "text",
+        )
+        new_nodes = split_nodes_link([node])
+        expected_result = [
+            TextNode("This is text with a broken link [broken link](", "text"),
+        ]
+
+        self.assertEqual(new_nodes, expected_result)
+
+    def test_split_nodes_link_4(self):
+        node = TextNode(
+            "This is text with an ![image]()",
+            "text",
+        )
+        new_nodes = split_nodes_link([node])
+        expected_result = [
+            TextNode("This is text with an ![image]()", "text"),
+        ]
+
+        self.assertEqual(new_nodes, expected_result)
+
+    def test_split_nodes_link_5(self):
+        new_nodes = split_nodes_link([])
+        expected_result = []
 
         self.assertEqual(new_nodes, expected_result)
 
