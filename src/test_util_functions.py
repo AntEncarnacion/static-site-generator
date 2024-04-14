@@ -4,10 +4,12 @@ from leafnode import LeafNode
 from textnode import TextNode
 from util_functions import (
     extract_markdown_images,
+    markdown_to_blocks,
     split_nodes_delimiter,
     extract_markdown_links,
     split_nodes_image,
     split_nodes_link,
+    text_to_textnodes,
 )
 
 
@@ -224,6 +226,175 @@ class TestUtil(unittest.TestCase):
         expected_result = []
 
         self.assertEqual(new_nodes, expected_result)
+
+    def test_text_to_textnodes_1(self):
+        result = text_to_textnodes(
+            "This is **text** with an *italic* word and a `code block` and an ![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png) and a [link](https://boot.dev)"
+        )
+        expected_result = [
+            TextNode("This is ", "text"),
+            TextNode("text", "bold"),
+            TextNode(" with an ", "text"),
+            TextNode("italic", "italic"),
+            TextNode(" word and a ", "text"),
+            TextNode("code block", "code"),
+            TextNode(" and an ", "text"),
+            TextNode(
+                "image",
+                "image",
+                "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png",
+            ),
+            TextNode(" and a ", "text"),
+            TextNode("link", "link", "https://boot.dev"),
+        ]
+
+        self.assertEqual(result, expected_result)
+
+    def test_text_to_textnodes_2(self):
+        result = text_to_textnodes("This is a simple text")
+        expected_result = [
+            TextNode("This is a simple text", "text"),
+        ]
+
+        self.assertEqual(result, expected_result)
+
+    def test_text_to_textnodes_3(self):
+        result = text_to_textnodes("")
+        expected_result = []
+
+        self.assertEqual(result, expected_result)
+
+    def test_text_to_textnodes_4(self):
+        result = text_to_textnodes(
+            "This is a simple text with **bold** **bold** ![image](linkhere)"
+        )
+        expected_result = [
+            TextNode("This is a simple text with ", "text"),
+            TextNode("bold", "bold"),
+            TextNode(" ", "text"),
+            TextNode("bold", "bold"),
+            TextNode(" ", "text"),
+            TextNode("image", "image", "linkhere"),
+        ]
+
+        self.assertEqual(result, expected_result)
+
+    def test_markdown_to_blocks_1(self):
+        result = markdown_to_blocks(
+            """This is **bolded** paragraph
+
+            This is another paragraph with *italic* text and `code` here
+            This is the same paragraph on a new line
+
+            * This is a list
+            * with items"""
+        )
+        expected_result = [
+            "This is **bolded** paragraph",
+            """This is another paragraph with *italic* text and `code` here
+            This is the same paragraph on a new line""",
+            """* This is a list
+            * with items""",
+        ]
+
+        self.assertEqual(result, expected_result)
+
+    def test_markdown_to_blocks_2(self):
+        result = markdown_to_blocks(
+            """This is **bolded** paragraph
+            This is another paragraph with *italic* text and `code` here
+            This is the same paragraph on a new line
+
+            * This is a list
+            * with items"""
+        )
+        expected_result = [
+            """This is **bolded** paragraph
+            This is another paragraph with *italic* text and `code` here
+            This is the same paragraph on a new line""",
+            """* This is a list
+            * with items""",
+        ]
+
+        self.assertEqual(result, expected_result)
+
+    def test_markdown_to_blocks_3(self):
+        result = markdown_to_blocks(
+            """This is **bolded** paragraph
+            This is another paragraph with *italic* text and `code` here
+            This is the same paragraph on a new line
+            * This is a list
+            * with items"""
+        )
+        expected_result = [
+            """This is **bolded** paragraph
+            This is another paragraph with *italic* text and `code` here
+            This is the same paragraph on a new line
+            * This is a list
+            * with items""",
+        ]
+
+        self.assertEqual(result, expected_result)
+
+    def test_markdown_to_blocks_4(self):
+        result = markdown_to_blocks("")
+        expected_result = []
+
+        self.assertEqual(result, expected_result)
+
+    def test_markdown_to_blocks_5(self):
+        result = markdown_to_blocks("One liner")
+        expected_result = ["One liner"]
+
+        self.assertEqual(result, expected_result)
+
+    def test_markdown_to_blocks_6(self):
+        result = markdown_to_blocks(
+            """This is **bolded** paragraph
+
+            This is another paragraph with *italic* text and `code` here
+            This is the same paragraph on a new line
+
+            * This is a list
+            * with items
+
+
+
+            """
+        )
+        expected_result = [
+            "This is **bolded** paragraph",
+            """This is another paragraph with *italic* text and `code` here
+            This is the same paragraph on a new line""",
+            """* This is a list
+            * with items""",
+        ]
+
+        self.assertEqual(result, expected_result)
+
+    def test_markdown_to_blocks_7(self):
+        result = markdown_to_blocks(
+            """This is **bolded** paragraph
+
+            This is another paragraph with *italic* text and `code` here
+            This is the same paragraph on a new line
+
+
+
+
+            * This is a list
+            * with items
+            """
+        )
+        expected_result = [
+            "This is **bolded** paragraph",
+            """This is another paragraph with *italic* text and `code` here
+            This is the same paragraph on a new line""",
+            """* This is a list
+            * with items""",
+        ]
+
+        self.assertEqual(result, expected_result)
 
 
 if __name__ == "__main__":

@@ -126,3 +126,27 @@ def split_nodes_link(old_nodes):
         else:
             raise Exception(f"Invalid markdown detected in text: '{old_node.text}'")
     return new_nodes
+
+
+def text_to_textnodes(text):
+    nodes = [TextNode(text, "text")]
+    nodes = split_nodes_delimiter(nodes, "**", "bold")
+    nodes = split_nodes_delimiter(nodes, "*", "italic")
+    nodes = split_nodes_delimiter(nodes, "`", "code")
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes
+
+
+def markdown_to_blocks(markdown):
+    if markdown == "":
+        return []
+    results = markdown.split("\n\n")
+    buffer = []
+    for result in results:
+        stripped_result = result.strip("\n\t ")
+        if stripped_result == "":
+            continue
+        buffer.append(stripped_result)
+
+    return buffer
