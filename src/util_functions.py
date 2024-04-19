@@ -1,6 +1,8 @@
 from leafnode import LeafNode
 from textnode import TextNode
 import re
+import text_types as tt
+import block_types as bt
 
 
 def text_node_to_html_node(text_node):
@@ -39,7 +41,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             split_nodes = []
             for text_index, text in enumerate(split_text):
                 if text_index % 2 == 0 and text != "":
-                    split_nodes.append(TextNode(text, "text"))
+                    split_nodes.append(TextNode(text, tt.text_type_text))
                 elif text != "":
                     split_nodes.append(TextNode(text, text_type))
             new_nodes.extend(split_nodes)
@@ -82,11 +84,13 @@ def split_nodes_image(old_nodes):
 
                 for text_index, text in enumerate(split_text):
                     if text_index == 0 and text != "":
-                        split_nodes.append(TextNode(text, "text"))
+                        split_nodes.append(TextNode(text, tt.text_type_text))
                     elif text_index == 1:
-                        split_nodes.append(TextNode(match[0], "image", url=match[1]))
+                        split_nodes.append(
+                            TextNode(match[0], tt.text_type_image, url=match[1])
+                        )
                     if text_index == 1 and text != "":
-                        split_nodes.append(TextNode(text, "text"))
+                        split_nodes.append(TextNode(text, tt.text_type_text))
             new_nodes.extend(split_nodes)
         else:
             raise Exception(f"Invalid markdown detected in text: '{old_node.text}'")
@@ -117,11 +121,13 @@ def split_nodes_link(old_nodes):
 
                 for text_index, text in enumerate(split_text):
                     if text_index == 0 and text != "":
-                        split_nodes.append(TextNode(text, "text"))
+                        split_nodes.append(TextNode(text, tt.text_type_text))
                     elif text_index == 1:
-                        split_nodes.append(TextNode(match[0], "link", url=match[1]))
+                        split_nodes.append(
+                            TextNode(match[0], tt.text_type_link, url=match[1])
+                        )
                     if text_index == 1 and text != "":
-                        split_nodes.append(TextNode(text, "text"))
+                        split_nodes.append(TextNode(text, tt.text_type_text))
             new_nodes.extend(split_nodes)
         else:
             raise Exception(f"Invalid markdown detected in text: '{old_node.text}'")
@@ -130,9 +136,9 @@ def split_nodes_link(old_nodes):
 
 def text_to_textnodes(text):
     nodes = [TextNode(text, "text")]
-    nodes = split_nodes_delimiter(nodes, "**", "bold")
-    nodes = split_nodes_delimiter(nodes, "*", "italic")
-    nodes = split_nodes_delimiter(nodes, "`", "code")
+    nodes = split_nodes_delimiter(nodes, "**", tt.text_type_bold)
+    nodes = split_nodes_delimiter(nodes, "*", tt.text_type_italic)
+    nodes = split_nodes_delimiter(nodes, "`", tt.text_type_code)
     nodes = split_nodes_image(nodes)
     nodes = split_nodes_link(nodes)
     return nodes
@@ -150,3 +156,60 @@ def markdown_to_blocks(markdown):
         buffer.append(stripped_result)
 
     return buffer
+
+
+def block_to_block_type(markdown_text):
+    split_markdown_text = markdown_text.split("\n")
+
+    heading_regex = r"^#{1,6}\ .*$"
+    if re.match(heading_regex, markdown_text):
+        return bt.block_type_heading
+
+    code_regex = r"^```[\S\s]*```$"
+    if re.match(code_regex, markdown_text):
+        return bt.block_type_code
+
+    quote_regex = r"^>[\S\s]*$"
+    quote_validation = None
+    for index, markdown_text_line in enumerate(split_markdown_text):
+        if index == 0:
+            quote_validation = re.search(quote_regex, markdown_text_line) != None
+        else:
+            quote_validation = (
+                quote_validation
+                and re.search(quote_regex, markdown_text_line.lstrip()) != None
+            )
+    if quote_validation:
+        return bt.block_type_quote
+
+    unordered_list_regex = r"^[\-\*]\ [\S\s]*$"
+    unordered_list_validation = None
+    for index, markdown_text_line in enumerate(split_markdown_text):
+        if index == 0:
+            unordered_list_validation = (
+                re.match(unordered_list_regex, markdown_text_line) != None
+            )
+        else:
+            unordered_list_validation = (
+                unordered_list_validation
+                and re.search(unordered_list_regex, markdown_text_line.lstrip()) != None
+            )
+    if unordered_list_validation:
+        return bt.block_type_unordered_list
+
+    ordered_list_validation = None
+    for index, markdown_text_line in enumerate(split_markdown_text):
+        ordered_list_regex = rf"^{index+1}\.\ [\S\s]*$"
+        if index == 0:
+            ordered_list_validation = (
+                re.search(ordered_list_regex, markdown_text_line) != None
+            )
+        else:
+            ordered_list_validation = (
+                ordered_list_validation
+                and re.search(ordered_list_regex, markdown_text_line.lstrip()) != None
+            )
+    if ordered_list_validation:
+        return bt.block_type_ordered_list
+
+    return bt.block_type_paragraph

@@ -1,8 +1,10 @@
 import unittest
 from leafnode import LeafNode
 
+import block_types as bt
 from textnode import TextNode
 from util_functions import (
+    block_to_block_type,
     extract_markdown_images,
     markdown_to_blocks,
     split_nodes_delimiter,
@@ -393,6 +395,102 @@ class TestUtil(unittest.TestCase):
             """* This is a list
             * with items""",
         ]
+
+        self.assertEqual(result, expected_result)
+
+    def test_markdown_to_blocks_8(self):
+        result = markdown_to_blocks("")
+        expected_result = []
+
+        self.assertEqual(result, expected_result)
+
+    def test_block_to_block_type_1(self):
+        result = block_to_block_type("""### This is a heading test""")
+        expected_result = bt.block_type_heading
+
+        self.assertEqual(result, expected_result)
+
+    def test_block_to_block_type_2(self):
+        result = block_to_block_type(
+            """```
+        This is a heading test```"""
+        )
+        expected_result = bt.block_type_code
+
+        self.assertEqual(result, expected_result)
+
+    def test_block_to_block_type_3(self):
+        result = block_to_block_type(
+            """>quote
+            >test
+            >here"""
+        )
+        expected_result = bt.block_type_quote
+
+        self.assertEqual(result, expected_result)
+
+    def test_block_to_block_type_4(self):
+        result = block_to_block_type(
+            """- quote
+            - test
+            * here"""
+        )
+        expected_result = bt.block_type_unordered_list
+
+        self.assertEqual(result, expected_result)
+
+    def test_block_to_block_type_5(self):
+        result = block_to_block_type(
+            """1. quote
+            2. test
+            3. here"""
+        )
+        expected_result = bt.block_type_ordered_list
+
+        self.assertEqual(result, expected_result)
+
+    def test_block_to_block_type_6(self):
+        result = block_to_block_type("""#######This is a heading test""")
+        expected_result = bt.block_type_paragraph
+
+        self.assertEqual(result, expected_result)
+
+    def test_block_to_block_type_2(self):
+        result = block_to_block_type(
+            """``
+        This is a heading test```"""
+        )
+        expected_result = bt.block_type_paragraph
+
+        self.assertEqual(result, expected_result)
+
+    def test_block_to_block_type_3(self):
+        result = block_to_block_type(
+            """>quote
+            test
+            >here"""
+        )
+        expected_result = bt.block_type_paragraph
+
+        self.assertEqual(result, expected_result)
+
+    def test_block_to_block_type_4(self):
+        result = block_to_block_type(
+            """- quote
+            -test
+            * here"""
+        )
+        expected_result = bt.block_type_paragraph
+
+        self.assertEqual(result, expected_result)
+
+    def test_block_to_block_type_5(self):
+        result = block_to_block_type(
+            """1. quote
+            3. test
+            3. here"""
+        )
+        expected_result = bt.block_type_paragraph
 
         self.assertEqual(result, expected_result)
 
